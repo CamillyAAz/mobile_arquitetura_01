@@ -79,6 +79,31 @@ A aplicação utiliza:
    flutter run
    ```
 
+## 🌐 Integração com API
+
+A aplicação agora consome dados reais da **FakeStore API** (https://fakestoreapi.com/products):
+
+### Funcionalidades da API
+- ✅ **Carregamento automático** - Produtos são carregados da API ao iniciar
+- ✅ **Botão de refresh** - Permite recarregar produtos manualmente
+- ✅ **Tratamento de erros** - Interface amigável para falhas de conexão
+- ✅ **Botão de retry** - Permite tentar novamente em caso de erro
+
+### Estrutura dos Dados
+```json
+{
+  "id": 1,
+  "title": "Fjallraven - Foldsack No. 1 Backpack",
+  "price": 109.95,
+  "image": "https://fakestoreapi.com/img/81fPKd-2AYL._AC_SL1500_.jpg"
+}
+```
+
+### Tratamento de Estado
+- **Loading** - Indicador de progresso durante carregamento
+- **Success** - Lista de produtos exibida normalmente
+- **Error** - Tela de erro com opção de tentar novamente
+
 ## 📚 Para Saber Mais
 
 Veja o arquivo [IMPLEMENTACAO_FAVORITOS.md](IMPLEMENTACAO_FAVORITOS.md) para documentação completa sobre a implementação.
