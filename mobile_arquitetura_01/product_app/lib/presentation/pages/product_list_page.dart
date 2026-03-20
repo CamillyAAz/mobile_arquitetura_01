@@ -19,8 +19,8 @@ class _ProductListPageState extends State<ProductListPage> {
     super.initState();
     // Inicializar o ViewModel
     _viewModel = ProductViewModel(SimpleProductRepository());
-    // Carregar os produtos iniciais
-    _viewModel.loadInitialProducts();
+    // Carregar os produtos da API
+    _viewModel.loadProducts();
   }
 
   @override
@@ -32,6 +32,12 @@ class _ProductListPageState extends State<ProductListPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         centerTitle: true,
         actions: [
+          // Botão de refresh
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => _viewModel.loadProducts(),
+            tooltip: 'Recarregar produtos',
+          ),
           // Contador de favoritos
           ValueListenableBuilder<ProductState>(
             valueListenable: _viewModel.state,
@@ -70,9 +76,32 @@ class _ProductListPageState extends State<ProductListPage> {
 
           if (state.error != null) {
             return Center(
-              child: Text(
-                'Erro: ${state.error}',
-                style: const TextStyle(color: Colors.red),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.error_outline,
+                    color: Colors.red,
+                    size: 64,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Erro ao carregar produtos',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    state.error!,
+                    style: const TextStyle(color: Colors.red),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: () => _viewModel.loadProducts(),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Tentar Novamente'),
+                  ),
+                ],
               ),
             );
           }

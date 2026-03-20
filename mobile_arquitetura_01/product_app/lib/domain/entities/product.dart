@@ -29,4 +29,24 @@ class Product {
       favorite: favorite ?? this.favorite,
     );
   }
+
+  // Criar produto a partir de JSON da API
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      id: json['id'] as int,
+      title: json['title'] as String,
+      price: (json['price'] as num).toDouble(),
+      image: json['image'] as String,
+    );
+  }
+
+  // Converter produto para JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'price': price,
+      'image': image,
+    };
+  }
 }
