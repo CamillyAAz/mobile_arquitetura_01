@@ -1,6 +1,87 @@
 # product_app
 
-A new Flutter project.
+Uma aplicação Flutter que demonstra um sistema completo de controle de favoritos em uma lista de produtos.
+
+## 🎯 Funcionalidades
+
+- ✅ Visualizar lista de produtos com nome, preço e status de favorito
+- ✅ Marcar/desmarcar produtos como favoritos
+- ✅ Contador dinâmico de produtos favoritados no AppBar
+- ✅ Atualização automática e em tempo real da interface
+- ✅ Arquitetura em camadas com padrão ViewModel
+
+## 📂 Estrutura do Projeto
+
+```
+lib/
+├── main.dart                                   # Ponto de entrada
+├── domain/                                     # Camada de Domínio
+│   ├── entities/product.dart                  # Modelo de dados
+│   └── repositories/                          # Interfaces do repositório
+├── data/                                      # Camada de Dados
+│   └── repositories/                          # Implementações do repositório
+└── presentation/                              # Camada de Apresentação
+    ├── pages/                                 # Páginas da aplicação
+    └── viewmodels/                            # Lógica de apresentação
+```
+
+## 🏗️ Arquitetura
+
+A aplicação implementa uma **arquitetura em camadas** com os seguintes componentes:
+
+### Domain (Domínio)
+- Define as entidades (`Product`) e interfaces de repositório
+- Independente de frameworks específicos
+
+### Data (Dados)
+- Implementa os repositórios
+- Gerencia acesso aos dados (API, banco local, etc.)
+
+### Presentation (Apresentação)
+- Contém ViewModels que gerenciam estado
+- UI responsiva que reage a mudanças de estado
+- Widgets reutilizáveis
+
+## 🎛️ Gerenciamento de Estado
+
+A aplicação utiliza:
+- **ValueNotifier** - Para reatividade
+- **ViewModel Pattern** - Para separação de responsabilidades
+- **ValueListenableBuilder** - Para reconstrução eficiente de widgets
+
+## 📱 Tela Principal
+
+![Conceito da Tela]
+
+```
+┌─────────────────────────────┐
+│ Produtos    [❤️ Favoritos]   │
+├─────────────────────────────┤
+│ Notebook - R$ 3500      [❤]│
+├─────────────────────────────┤
+│ Mouse - R$ 120          [☆] │
+├─────────────────────────────┤
+│ Teclado - R$ 250        [★] │
+├─────────────────────────────┤
+│ Monitor - R$ 900        [☆] │
+└─────────────────────────────┘
+```
+
+## 🚀 Como Executar
+
+1. Instale as dependências:
+   ```bash
+   flutter pub get
+   ```
+
+2. Execute a aplicação:
+   ```bash
+   flutter run
+   ```
+
+## 📚 Para Saber Mais
+
+Veja o arquivo [IMPLEMENTACAO_FAVORITOS.md](IMPLEMENTACAO_FAVORITOS.md) para documentação completa sobre a implementação.
 
 ## Getting Started
 
