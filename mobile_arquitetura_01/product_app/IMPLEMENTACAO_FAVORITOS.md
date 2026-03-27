@@ -73,15 +73,23 @@ class Product {
 ### AppBar
 - Exibe o título "Produtos"
 - Mostra contador de favoritos com ícone ❤️ em tempo real
+- Botão de refresh para recarregar produtos da API
 
 ### Lista de Produtos
 Cada produto é uma Card com:
-- **Nome** do produto
+- **Imagem**: Carregada da API com indicador de loading e fallback
+- **Nome** do produto (máximo 2 linhas com ellipsis)
 - **Preço** formatado em R$
 - **Botão de favorito** (ícone de coração)
   - Vazio ☆ = não favoritado
   - Preenchido ★ = favoritado
   - Muda entre cores cinza e vermelho
+
+### Tratamento de Imagens
+- **Image.network** com loading builder para progresso
+- **Error builder** com ícone de imagem quebrada
+- **Container** com bordas arredondadas e fundo cinza
+- **Tamanho fixo** 80x80 pixels para consistência
 
 ## 🔄 Fluxo de Funcionamento
 

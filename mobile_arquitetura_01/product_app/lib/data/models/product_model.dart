@@ -5,12 +5,16 @@ class ProductModel {
   final String title;
   final double price;
   final String image;
+  final String description;
+  final String category;
 
   ProductModel({
     required this.id,
     required this.title,
     required this.price,
     required this.image,
+    required this.description,
+    required this.category,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -19,6 +23,8 @@ class ProductModel {
       title: json['title'] as String,
       price: (json['price'] as num).toDouble(),
       image: json['image'] as String,
+      description: json['description'] as String? ?? 'Sem descrição',
+      category: json['category'] as String? ?? 'Sem categoria',
     );
   }
 
@@ -28,6 +34,8 @@ class ProductModel {
       title: title,
       price: price,
       image: image,
+      description: description,
+      category: category,
     );
   }
 }

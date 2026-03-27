@@ -28,24 +28,32 @@ class ProductViewModel {
         title: 'Notebook',
         price: 3500,
         image: 'assets/notebook.png',
+        description: 'Notebook rápido e leve para tarefas diárias.',
+        category: 'Eletrônicos',
       ),
       Product(
         id: 2,
         title: 'Mouse',
         price: 120,
         image: 'assets/mouse.png',
+        description: 'Mouse ergonômico com alta precisão.',
+        category: 'Periféricos',
       ),
       Product(
         id: 3,
         title: 'Teclado',
         price: 250,
         image: 'assets/keyboard.png',
+        description: 'Teclado mecânico com iluminação RGB.',
+        category: 'Periféricos',
       ),
       Product(
         id: 4,
         title: 'Monitor',
         price: 900,
         image: 'assets/monitor.png',
+        description: 'Monitor 24" Full HD com cores vibrantes.',
+        category: 'Eletrônicos',
       ),
     ];
     state.value = state.value.copyWith(products: initialProducts);

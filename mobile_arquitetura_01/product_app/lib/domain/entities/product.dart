@@ -3,6 +3,8 @@ class Product {
   final String title;
   final double price;
   final String image;
+  final String description;
+  final String category;
   bool favorite;
 
   Product({
@@ -10,6 +12,8 @@ class Product {
     required this.title,
     required this.price,
     required this.image,
+    required this.description,
+    required this.category,
     this.favorite = false,
   });
 
@@ -19,6 +23,8 @@ class Product {
     String? title,
     double? price,
     String? image,
+    String? description,
+    String? category,
     bool? favorite,
   }) {
     return Product(
@@ -26,6 +32,8 @@ class Product {
       title: title ?? this.title,
       price: price ?? this.price,
       image: image ?? this.image,
+      description: description ?? this.description,
+      category: category ?? this.category,
       favorite: favorite ?? this.favorite,
     );
   }
@@ -37,6 +45,8 @@ class Product {
       title: json['title'] as String,
       price: (json['price'] as num).toDouble(),
       image: json['image'] as String,
+      description: json['description'] as String? ?? 'Sem descrição',
+      category: json['category'] as String? ?? 'Sem categoria',
     );
   }
 
@@ -47,6 +57,8 @@ class Product {
       'title': title,
       'price': price,
       'image': image,
+      'description': description,
+      'category': category,
     };
   }
 }

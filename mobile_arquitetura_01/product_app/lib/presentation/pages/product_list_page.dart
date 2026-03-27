@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:product_app/presentation/pages/product_detail_page.dart';
 import 'package:product_app/presentation/viewmodels/product_viewmodel.dart';
 import 'package:product_app/presentation/viewmodels/product_state.dart';
 import 'package:product_app/domain/entities/product.dart';
@@ -119,6 +120,14 @@ class _ProductListPageState extends State<ProductListPage> {
               final product = state.products[index];
               return ProductCard(
                 product: product,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProductDetailPage(product: product),
+                    ),
+                  );
+                },
                 onFavoritePressed: () {
                   _viewModel.toggleFavorite(product.id);
                 },
@@ -135,23 +144,68 @@ class _ProductListPageState extends State<ProductListPage> {
 class ProductCard extends StatelessWidget {
   final Product product;
   final VoidCallback onFavoritePressed;
+  final VoidCallback? onTap;
 
   const ProductCard({
     super.key,
     required this.product,
     required this.onFavoritePressed,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: onTap,
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        elevation: 2,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Imagem do produto
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.grey[200],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  product.image,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                            : null,
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.grey[300],
+                      child: const Center(
+                        child: Icon(
+                          Icons.broken_image,
+                          color: Colors.grey,
+                          size: 32,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
             // Informações do produto
             Expanded(
               child: Column(
@@ -162,6 +216,8 @@ class ProductCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -187,6 +243,7 @@ class ProductCard extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }
