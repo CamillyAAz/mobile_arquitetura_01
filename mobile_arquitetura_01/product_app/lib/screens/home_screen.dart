@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:product_app/presentation/pages/product_list_page.dart';
+import 'product_list_screen.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +37,7 @@ class HomePage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const ProductListPage(),
+                      builder: (context) => const ProductListScreen(),
                     ),
                   );
                 },

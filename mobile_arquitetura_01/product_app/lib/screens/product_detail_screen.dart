@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:product_app/domain/entities/product.dart';
+import '../models/product.dart';
+import 'product_form_screen.dart';
 
-class ProductDetailPage extends StatelessWidget {
+class ProductDetailScreen extends StatelessWidget {
   final Product product;
 
-  const ProductDetailPage({super.key, required this.product});
+  const ProductDetailScreen({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
@@ -12,6 +13,26 @@ class ProductDetailPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Detalhes do Produto'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProductFormScreen(
+                    product: product,
+                    onProductSaved: (updatedProduct) {
+                      // Voltar para a tela anterior após salvar
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              );
+            },
+            tooltip: 'Editar produto',
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -51,9 +72,7 @@ class ProductDetailPage extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               product.title,
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
@@ -65,16 +84,12 @@ class ProductDetailPage extends StatelessWidget {
             const SizedBox(height: 8),
             Chip(
               label: Text(product.category),
-              backgroundColor: Theme.of(
-                context,
-              ).colorScheme.secondary.withOpacity(0.15),
+              backgroundColor: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.15),
             ),
             const SizedBox(height: 16),
             Text(
               'Descrição',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(

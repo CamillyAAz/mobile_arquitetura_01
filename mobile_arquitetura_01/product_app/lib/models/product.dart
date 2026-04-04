@@ -57,8 +57,8 @@ class Product {
       'title': title,
       'price': price,
       'image': image,
-      'description': description,
-      'category': category,
+      description: description,
+      category: category,
     };
   }
 }
