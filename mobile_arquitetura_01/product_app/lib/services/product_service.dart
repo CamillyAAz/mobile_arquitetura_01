@@ -1,60 +1,60 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/product.dart';
 
 class ProductService {
-  static const String _baseUrl = 'https://fakestoreapi.com';
+  static const String _baseUrl = 'https://dummyjson.com/products';
   static const String _favoritesKey = 'favorite_product_ids';
   static const String _localProductsKey = 'local_products';
 
   Future<List<Product>> fetchProducts() async {
-    try {
-      final response = await http.get(Uri.parse('$_baseUrl/products'));
+    final response = await http.get(Uri.parse(_baseUrl));
 
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonData = json.decode(response.body);
-        final apiProducts = jsonData.map((json) => Product.fromJson(json)).toList();
-
-        // Carregar produtos locais (criados/editados)
-        final localProducts = await _getLocalProducts();
-
-        // Combinar produtos da API com locais
-        final allProducts = [...apiProducts, ...localProducts];
-
-        // Carregar favoritos
-        final favoriteIds = await getFavoriteIds();
-        return allProducts.map((product) {
-          return product.copyWith(favorite: favoriteIds.contains(product.id));
-        }).toList();
-      } else {
-        throw Exception('Falha ao carregar produtos: ${response.statusCode}');
-      }
-    } catch (e) {
-      // Em caso de erro, tentar retornar apenas produtos locais
-      final localProducts = await _getLocalProducts();
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      final List<dynamic> productsJson = data['products'];
+      final apiProducts = productsJson
+          .map((json) => Product.fromJson(json))
+          .toList();
       final favoriteIds = await getFavoriteIds();
-      return localProducts.map((product) {
+
+      return apiProducts.map((product) {
         return product.copyWith(favorite: favoriteIds.contains(product.id));
       }).toList();
     }
+
+    throw Exception('Falha ao carregar produtos: ${response.statusCode}');
+  }
+
+  Future<Product> getProductById(int id) async {
+    final response = await http.get(Uri.parse('$_baseUrl/$id'));
+
+    if (response.statusCode == 200) {
+      final product = Product.fromJson(json.decode(response.body));
+      final favoriteIds = await getFavoriteIds();
+      return product.copyWith(favorite: favoriteIds.contains(product.id));
+    }
+
+    throw Exception('Falha ao carregar produto: ${response.statusCode}');
   }
 
   Future<Product> addProduct(Product product) async {
-    // Simular criação local (já que API não suporta)
-    final newProduct = product.copyWith(id: DateTime.now().millisecondsSinceEpoch);
+    final newProduct = product.copyWith(
+      id: DateTime.now().millisecondsSinceEpoch,
+    );
     await _saveLocalProduct(newProduct);
     return newProduct;
   }
 
   Future<Product> updateProduct(Product product) async {
-    // Simular atualização local
     await _updateLocalProduct(product);
     return product;
   }
 
   Future<void> deleteProduct(int id) async {
-    // Simular exclusão local
     await _deleteLocalProduct(id);
   }
 
@@ -65,8 +65,8 @@ class ProductService {
     final lowerQuery = query.toLowerCase();
     return allProducts.where((product) {
       return product.title.toLowerCase().contains(lowerQuery) ||
-             product.description.toLowerCase().contains(lowerQuery) ||
-             product.category.toLowerCase().contains(lowerQuery);
+          product.description.toLowerCase().contains(lowerQuery) ||
+          product.category.toLowerCase().contains(lowerQuery);
     }).toList();
   }
 
@@ -78,10 +78,12 @@ class ProductService {
 
   Future<void> saveFavoriteIds(List<int> ids) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_favoritesKey, ids.map((id) => id.toString()).toList());
+    await prefs.setStringList(
+      _favoritesKey,
+      ids.map((id) => id.toString()).toList(),
+    );
   }
 
-  // Métodos auxiliares para persistência local
   Future<List<Product>> _getLocalProducts() async {
     final prefs = await SharedPreferences.getInstance();
     final productsJson = prefs.getStringList(_localProductsKey) ?? [];

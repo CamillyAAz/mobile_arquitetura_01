@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+
 import '../models/product.dart';
 import '../services/product_service.dart';
+import '../session/session_controller.dart';
 import '../widgets/product_card.dart';
+import 'login_screen.dart';
 import 'product_detail_screen.dart';
-import 'product_form_screen.dart';
 
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
@@ -14,23 +16,36 @@ class ProductListScreen extends StatefulWidget {
 
 class _ProductListScreenState extends State<ProductListScreen> {
   final ProductService _service = ProductService();
+  final TextEditingController _searchController = TextEditingController();
   List<Product> _products = [];
   List<Product> _filteredProducts = [];
   bool _isLoading = true;
   String? _error;
-  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _loadProducts();
     _searchController.addListener(_onSearchChanged);
+
+    if (!SessionController.instance.isLoggedIn) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _goToLogin());
+      return;
+    }
+
+    _loadProducts();
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _goToLogin() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+    );
   }
 
   Future<void> _loadProducts() async {
@@ -41,12 +56,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
     try {
       final products = await _service.fetchProducts();
+      if (!mounted) return;
       setState(() {
         _products = products;
-        _filteredProducts = products;
+        _applySearch();
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -55,19 +72,21 @@ class _ProductListScreenState extends State<ProductListScreen> {
   }
 
   void _onSearchChanged() {
-    final query = _searchController.text;
-    setState(() {
-      if (query.isEmpty) {
-        _filteredProducts = _products;
-      } else {
-        final lowerQuery = query.toLowerCase();
-        _filteredProducts = _products.where((product) {
-          return product.title.toLowerCase().contains(lowerQuery) ||
-                 product.description.toLowerCase().contains(lowerQuery) ||
-                 product.category.toLowerCase().contains(lowerQuery);
-        }).toList();
-      }
-    });
+    setState(_applySearch);
+  }
+
+  void _applySearch() {
+    final query = _searchController.text.toLowerCase();
+    if (query.isEmpty) {
+      _filteredProducts = _products;
+      return;
+    }
+
+    _filteredProducts = _products.where((product) {
+      return product.title.toLowerCase().contains(query) ||
+          product.description.toLowerCase().contains(query) ||
+          product.category.toLowerCase().contains(query);
+    }).toList();
   }
 
   Future<void> _toggleFavorite(Product product) async {
@@ -80,57 +99,27 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
     setState(() {
       _products = updatedProducts;
-      _onSearchChanged(); // Reaplicar filtro
+      _applySearch();
     });
 
-    // Persistir favoritos
-    final favoriteIds = updatedProducts.where((p) => p.favorite).map((p) => p.id).toList();
+    final favoriteIds = updatedProducts
+        .where((p) => p.favorite)
+        .map((p) => p.id)
+        .toList();
     await _service.saveFavoriteIds(favoriteIds);
   }
 
-  Future<void> _deleteProduct(Product product) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Excluir Produto'),
-        content: Text('Tem certeza que deseja excluir "${product.title}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Excluir'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      try {
-        await _service.deleteProduct(product.id);
-        await _loadProducts(); // Recarregar lista
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Produto excluído com sucesso!')),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erro ao excluir produto: $e')),
-          );
-        }
-      }
-    }
+  void _logout() {
+    SessionController.instance.logout();
+    _goToLogin();
   }
 
   int get _favoriteCount => _products.where((p) => p.favorite).length;
 
   @override
   Widget build(BuildContext context) {
+    final user = SessionController.instance.user;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Produtos'),
@@ -138,57 +127,53 @@ class _ProductListScreenState extends State<ProductListScreen> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         centerTitle: true,
         actions: [
-          // Botão de criar produto
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ProductFormScreen(
-                    onProductSaved: (product) {
-                      setState(() {
-                        _products.add(product);
-                        _onSearchChanged(); // Reaplicar filtro se houver
-                      });
-                    },
-                  ),
-                ),
-              );
-            },
-            tooltip: 'Criar produto',
-          ),
-          // Botão de refresh
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadProducts,
             tooltip: 'Recarregar produtos',
           ),
-          // Contador de favoritos
           Padding(
-            padding: const EdgeInsets.only(right: 16.0),
+            padding: const EdgeInsets.only(right: 8),
             child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.red.withAlpha(100),
-                  borderRadius: BorderRadius.circular(12),
-                ),
+              child: Text(
+                'Favoritos: $_favoriteCount',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+          if (user != null) ...[
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Center(
                 child: Text(
-                  '❤️ $_favoriteCount',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  user.fullName.isEmpty ? user.username : user.fullName,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: CircleAvatar(
+                radius: 16,
+                backgroundImage: user.image.isNotEmpty
+                    ? NetworkImage(user.image)
+                    : null,
+                child: user.image.isEmpty
+                    ? const Icon(Icons.person, size: 18)
+                    : null,
+              ),
+            ),
+          ],
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
+            tooltip: 'Sair',
           ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(8),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -215,86 +200,68 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
     if (_error != null) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 64),
-            const SizedBox(height: 16),
-            Text('Erro ao carregar produtos', style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
-            Text(_error!, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: _loadProducts,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Tentar Novamente'),
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 64),
+              const SizedBox(height: 16),
+              Text(
+                'Erro ao carregar produtos',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _error!,
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: _loadProducts,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Tentar novamente'),
+              ),
+            ],
+          ),
         ),
       );
     }
 
     if (_filteredProducts.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              _searchController.text.isEmpty ? Icons.inventory_2 : Icons.search_off,
-              size: 64,
-              color: Colors.grey,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _searchController.text.isEmpty
-                  ? 'Nenhum produto disponível'
-                  : 'Nenhum produto encontrado para "${_searchController.text}"',
-              style: Theme.of(context).textTheme.headlineSmall,
-              textAlign: TextAlign.center,
-            ),
-          ],
+        child: Text(
+          _searchController.text.isEmpty
+              ? 'Nenhum produto disponivel'
+              : 'Nenhum produto encontrado para "${_searchController.text}"',
+          textAlign: TextAlign.center,
         ),
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(8.0),
-      itemCount: _filteredProducts.length,
-      itemBuilder: (context, index) {
-        final product = _filteredProducts[index];
-        return ProductCard(
-          product: product,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ProductDetailScreen(product: product),
-              ),
-            );
-          },
-          onFavoritePressed: () => _toggleFavorite(product),
-          onEditPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ProductFormScreen(
-                  product: product,
-                  onProductSaved: (updatedProduct) {
-                    setState(() {
-                      final index = _products.indexWhere((p) => p.id == updatedProduct.id);
-                      if (index != -1) {
-                        _products[index] = updatedProduct;
-                        _onSearchChanged(); // Reaplicar filtro
-                      }
-                    });
-                  },
+    return RefreshIndicator(
+      onRefresh: _loadProducts,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(8),
+        itemCount: _filteredProducts.length,
+        itemBuilder: (context, index) {
+          final product = _filteredProducts[index];
+          return ProductCard(
+            product: product,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      ProductDetailScreen(productId: product.id),
                 ),
-              ),
-            );
-          },
-          onDeletePressed: () => _deleteProduct(product),
-        );
-      },
+              );
+            },
+            onFavoritePressed: () => _toggleFavorite(product),
+          );
+        },
+      ),
     );
   }
 }

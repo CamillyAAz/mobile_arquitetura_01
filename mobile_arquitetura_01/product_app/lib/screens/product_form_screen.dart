@@ -5,11 +5,7 @@ class ProductFormScreen extends StatefulWidget {
   final Product? product; // null para criação, preenchido para edição
   final Function(Product)? onProductSaved;
 
-  const ProductFormScreen({
-    super.key,
-    this.product,
-    this.onProductSaved,
-  });
+  const ProductFormScreen({super.key, this.product, this.onProductSaved});
 
   @override
   State<ProductFormScreen> createState() => _ProductFormScreenState();
@@ -55,7 +51,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
     try {
       final product = Product(
-        id: _isEditing ? widget.product!.id : DateTime.now().millisecondsSinceEpoch,
+        id: _isEditing
+            ? widget.product!.id
+            : DateTime.now().millisecondsSinceEpoch,
         title: _titleController.text,
         price: double.parse(_priceController.text),
         description: _descriptionController.text,
@@ -71,15 +69,19 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_isEditing ? 'Produto atualizado!' : 'Produto criado!')),
+          SnackBar(
+            content: Text(
+              _isEditing ? 'Produto atualizado!' : 'Produto criado!',
+            ),
+          ),
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao salvar produto: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erro ao salvar produto: $e')));
       }
     } finally {
       if (mounted) {
@@ -121,13 +123,15 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       appBar: AppBar(
         title: Text(_isEditing ? 'Editar Produto' : 'Criar Produto'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        actions: _isEditing ? [
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: _deleteProduct,
-            tooltip: 'Excluir produto',
-          ),
-        ] : null,
+        actions: _isEditing
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: _deleteProduct,
+                  tooltip: 'Excluir produto',
+                ),
+              ]
+            : null,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -219,7 +223,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   onPressed: _isLoading ? null : _saveProduct,
                   child: _isLoading
                       ? const CircularProgressIndicator()
-                      : Text(_isEditing ? 'Atualizar Produto' : 'Criar Produto'),
+                      : Text(
+                          _isEditing ? 'Atualizar Produto' : 'Criar Produto',
+                        ),
                 ),
               ),
             ],

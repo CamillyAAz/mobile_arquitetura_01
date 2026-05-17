@@ -49,7 +49,7 @@ class ProductCard extends StatelessWidget {
                         child: CircularProgressIndicator(
                           value: loadingProgress.expectedTotalBytes != null
                               ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
+                                    loadingProgress.expectedTotalBytes!
                               : null,
                         ),
                       );
@@ -94,9 +94,9 @@ class ProductCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       product.category,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -112,25 +112,21 @@ class ProductCard extends StatelessWidget {
                       color: product.favorite ? Colors.red : Colors.grey,
                     ),
                     onPressed: onFavoritePressed,
-                    tooltip: product.favorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos',
+                    tooltip: product.favorite
+                        ? 'Remover dos favoritos'
+                        : 'Adicionar aos favoritos',
                   ),
                   // Botão de editar (só mostrar se onEditPressed for fornecido)
                   if (onEditPressed != null)
                     IconButton(
-                      icon: const Icon(
-                        Icons.edit,
-                        color: Colors.blue,
-                      ),
+                      icon: const Icon(Icons.edit, color: Colors.blue),
                       onPressed: onEditPressed,
                       tooltip: 'Editar produto',
                     ),
                   // Botão de delete (só mostrar se onDeletePressed for fornecido)
                   if (onDeletePressed != null)
                     IconButton(
-                      icon: const Icon(
-                        Icons.delete,
-                        color: Colors.red,
-                      ),
+                      icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: onDeletePressed,
                       tooltip: 'Excluir produto',
                     ),
