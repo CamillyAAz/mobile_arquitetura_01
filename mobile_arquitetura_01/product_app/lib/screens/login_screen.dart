@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
 
-      SessionController.instance.login(user);
+      await SessionController.instance.login(user);
 
       if (!mounted) return;
       Navigator.pushReplacement(

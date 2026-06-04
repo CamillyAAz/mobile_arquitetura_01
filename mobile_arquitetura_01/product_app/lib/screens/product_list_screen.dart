@@ -109,8 +109,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
     await _service.saveFavoriteIds(favoriteIds);
   }
 
-  void _logout() {
-    SessionController.instance.logout();
+  Future<void> _logout() async {
+    await SessionController.instance.logout();
+    if (!mounted) return;
     _goToLogin();
   }
 

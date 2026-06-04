@@ -32,5 +32,18 @@ class AuthUser {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'username': username,
+      'email': email,
+      'firstName': firstName,
+      'lastName': lastName,
+      'image': image,
+      'accessToken': accessToken,
+      'refreshToken': refreshToken,
+    };
+  }
+
   String get fullName => '$firstName $lastName'.trim();
 }
